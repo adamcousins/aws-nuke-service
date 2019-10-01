@@ -1,6 +1,6 @@
-#AWS Account Nuke Service - Serverless Executor
+# AWS Account Nuke Service - Serverless Executor
 
-##Overview
+## Overview
 This repository is an example of how to execute [aws-nuke](https://github.com/rebuy-de/aws-nuke) within a serverless environment on AWS leveraging [AWS CodePipeline](https://aws.amazon.com/codepipeline/) and [AWS CodeBuild](https://aws.amazon.com/codebuild/).   
 AWS CodePipeline has been selected due to the native integration with Github, as opposed to AWS CodeBuild which requires a manual association with a git repository.   
 
@@ -8,7 +8,7 @@ AWS CodePipeline has been selected due to the native integration with Github, as
 
 ![Nuke Service](https://github.com/adamcousins/aws-nuke-service/raw/master/aws_nuke_service.png "Nuke Service")
 
-###Installation
+### Installation
 
 0. Fork this repository
 https://help.github.com/en/articles/fork-a-repo
@@ -24,17 +24,17 @@ https://sceptre.cloudreach.com/latest/docs/resolvers.html#custom-resolvers
 3. Check Installation Successful
 `sceptre --version`
 
-###Configuration
+### Configuration
 1. Update GitHub Details for the source repository where the aws-nuke config file exists   
 `cat sceptre/config/sandbox/executor.yaml | grep Git`
 
 2. Update Email address for CodePipeline notifications   
 `cat sceptre/config/sandbox/executor.yaml | grep NotificationEmailAddress`
 
-####Note: 
+#### Note: 
 For aws-nuke to access all services and to perform deletions on all services the IAM Role assigned to the AWS CodeBuild project `CodeBuildPolicy` is completely permissive. Please review these permissions in your environment to ensure suitable.
 
-###Deployment
+### Deployment
 
 1. Create SSM Parameter `/github/token` with github personal access token   
 Follow the prompts to enter your CLI profile, region and token. SSM Parameter name can be changed if desired.   
@@ -46,10 +46,10 @@ If so, it must also be updated here:   `cat sceptre/config/sandbox/executor.yaml
 `cd sceptre && sceptre launch sandbox`   
 
 
-##References
+## References
 
-###aws-nuke
+### aws-nuke
 [aws-nuke](https://github.com/rebuy-de/aws-nuke) is a project which will nuke a whole AWS account and delete all its resources.   
 
-###sceptre
+### sceptre
 This example leverages Cloudreach's [sceptre](https://github.com/Sceptre/sceptre) project to deploy the Cloudformation stack for this solution.   
