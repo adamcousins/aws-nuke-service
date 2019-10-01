@@ -35,7 +35,7 @@ https://sceptre.cloudreach.com/latest/docs/resolvers.html#custom-resolvers
 `cat aws-nuke-config/config.yaml | grep -A 1 accounts`
 
 #### Note: 
-For aws-nuke to access all services and to perform deletions on all services the IAM Role assigned to the AWS CodeBuild project `CodeBuildPolicy` is completely permissive. Please review these permissions in your environment to ensure suitable.
+For aws-nuke to access and delete all services the IAM Role assigned to the AWS CodeBuild project `CodeBuildPolicy` is completely permissive. Please review these permissions in your environment to ensure suitable.
 
 ### Deployment
 
