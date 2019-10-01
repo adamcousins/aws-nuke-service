@@ -1,0 +1,92 @@
+#config.yaml
+
+#aws-nuke-config file
+regions: #Region to target
+- global
+- us-west-2
+- ap-southeast-2
+#- AWS Organizations SCP Blocking access to the below regions. https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_example-scps.html#example-scp-deny-region
+# - us-east-1
+# - us-east-2
+# - us-west-1
+# - ap-east-1
+# - ap-south-1
+# - ap-northeast-3
+# - ap-northeast-2
+# - ap-southeast-1
+# - ap-northeast-1
+# - ca-central-1
+# - eu-central-1
+# - eu-west-1
+# - eu-west-2
+# - eu-west-3
+# - eu-north-1
+# - me-south-1
+# - sa-east-1
+# - cn-north-1
+# - cn-northwest-1
+# - us-gov-east-1
+# - us-gov-west-1
+
+account-blacklist:
+- 0000000000 #Account Ids to skip
+
+accounts:
+  1234567890: #Account Ids to target
+    presets:
+      - "aws-nuke-service"
+      - "aws-organizations"
+    filters: {} #Filters to exclude resources
+presets: #Blocks of Filters to exclude resources
+  aws-nuke-service: #Exclude service deploy by this solution
+    filters:
+      SSMParameter:
+      - "/github/token"
+      IAMRole:
+      - type: contains
+        value: "aws-nuke"
+      IAMRolePolicyAttachment:
+      - type: contains
+        value: "aws-nuke"
+      IAMRolePolicy:
+      - type: contains
+        value: "aws-nuke"
+      S3Bucket:
+      - type: contains
+        value: "aws-nuke"
+      S3Object:
+      - type: contains
+        value: "aws-nuke"
+      CodePipelinePipeline:
+      - type: contains
+        value: "aws-nuke"
+      CodeBuildProject:
+      - type: contains
+        value: "aws-nuke"
+      SNSTopic:
+      - type: contains
+        value: "aws-nuke"
+      SNSTopicPolicy:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchLogsLogGroup:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchEventsRule:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchEventsTarget:
+      - type: contains
+        value: "aws-nuke"
+      CloudFormationStack:
+      - type: contains
+        value: "aws-nuke"
+      SNSSubscription:
+      - type: contains
+        value: "aws-nuke"
+  aws-organizations: #Exclude AWS Organization created role deploy by AWS Organizations
+    filters:
+      IAMRole:
+      - "OrganizationAccountAccessRole"
+      IAMRolePolicy:
+      - "OrganizationAccountAccessRole -> AdministratorAccess"

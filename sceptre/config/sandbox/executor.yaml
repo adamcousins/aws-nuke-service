@@ -1,0 +1,13 @@
+#aws-nuke-service.yaml
+template_path: aws-nuke-service.yaml 
+
+parameters:
+  GitUser: adamcousins
+  GitRepo: aws-nuke-service
+  GitBranch: master
+  GitToken: !ssm /github/token
+  AWSNukeConfigFile: aws-nuke-config/config.yaml
+  AWSNukeDryRun: "true" #Set to false to terminate resources
+  NotificationEmailAddress: example@example.com
+  WhenToExecute: cron(0 14 * * ? *)
+  RetentionInDays: "30"
