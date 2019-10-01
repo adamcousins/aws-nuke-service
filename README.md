@@ -31,6 +31,9 @@ https://sceptre.cloudreach.com/latest/docs/resolvers.html#custom-resolvers
 2. Update Email address for CodePipeline notifications   
 `cat sceptre/config/sandbox/executor.yaml | grep NotificationEmailAddress`
 
+3. Update AWS Account Id to target   
+`cat aws-nuke-config/config.yaml | grep -A 1 accounts`
+
 #### Note: 
 For aws-nuke to access all services and to perform deletions on all services the IAM Role assigned to the AWS CodeBuild project `CodeBuildPolicy` is completely permissive. Please review these permissions in your environment to ensure suitable.
 
@@ -44,6 +47,66 @@ If so, it must also be updated here:   `cat sceptre/config/sandbox/executor.yaml
 
 2. Deploy stack with sceptre   
 `cd sceptre && sceptre launch sandbox`   
+
+---
+### Cloudformation Template
+Deployment of this Cloudformation stack can be achieved without sceptre and just using the AWS Console.   
+`cat sceptre/templates/aws-nuke-service.yaml`
+
+### aws-nuke Config File 
+`cat aws-nuke-config/config.yaml`   
+Included in this config file are resources which the above Cloudformation template provisions.
+```
+presets: #Blocks of Filters to exclude resources
+  aws-nuke-service: #Exclude service deploy by this solution
+    filters:
+      SSMParameter:
+      - "/github/token"
+      IAMRole:
+      - type: contains
+        value: "aws-nuke"
+      IAMRolePolicyAttachment:
+      - type: contains
+        value: "aws-nuke"
+      IAMRolePolicy:
+      - type: contains
+        value: "aws-nuke"
+      S3Bucket:
+      - type: contains
+        value: "aws-nuke"
+      S3Object:
+      - type: contains
+        value: "aws-nuke"
+      CodePipelinePipeline:
+      - type: contains
+        value: "aws-nuke"
+      CodeBuildProject:
+      - type: contains
+        value: "aws-nuke"
+      SNSTopic:
+      - type: contains
+        value: "aws-nuke"
+      SNSTopicPolicy:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchLogsLogGroup:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchEventsRule:
+      - type: contains
+        value: "aws-nuke"
+      CloudWatchEventsTarget:
+      - type: contains
+        value: "aws-nuke"
+      CloudFormationStack:
+      - type: contains
+        value: "aws-nuke"
+      SNSSubscription:
+      - type: contains
+        value: "aws-nuke"
+```
+
+More information about the aws-nuke config file [here](https://github.com/rebuy-de/aws-nuke#usage)
 
 
 ## References
