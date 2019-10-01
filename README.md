@@ -8,6 +8,11 @@ AWS CodePipeline has been selected due to the native integration with Github, as
 
 ![Nuke Service](https://github.com/adamcousins/aws-nuke-service/raw/master/aws_nuke_service.png "Nuke Service")
 
+### Dynamic AWS Account Id to target   
+A place holder exists in the aws-nuke config file for AWS CodeBuild to dynamically update with the current running AWS Account Id.   
+This allows for multiple deployments across many sandbox accounts without having to manage the AWS account Id.   
+`cat aws-nuke-config/config.yaml | grep -A 1 accounts`
+
 ### Installation
 
 0. Fork this repository
@@ -29,12 +34,9 @@ https://sceptre.cloudreach.com/latest/docs/resolvers.html#custom-resolvers
 `cat sceptre/config/sandbox/executor.yaml | grep Git`
 
 2. Update Email address for CodePipeline notifications   
-`cat sceptre/config/sandbox/executor.yaml | grep NotificationEmailAddress`
+`cat sceptre/config/sandbox/executor.yaml | grep NotificationEmailAddress`   
 
-3. Update AWS Account Id to target   
-`cat aws-nuke-config/config.yaml | grep -A 1 accounts`
-
-4. Push this code to a repository you can access with a GitHub personal access token   
+3. Push this code to a repository you can access with a GitHub personal access token   
 
 #### Note: 
 For aws-nuke to access and delete all services the IAM Role assigned to the AWS CodeBuild project `CodeBuildPolicy` is completely permissive. Please review these permissions in your environment to ensure suitable.

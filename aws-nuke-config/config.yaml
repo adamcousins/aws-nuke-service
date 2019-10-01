@@ -29,10 +29,10 @@ regions: #Region to target
 # - us-gov-west-1
 
 account-blacklist:
-- 0000000000 #Account Ids to skip
+- 1234567890 #Account Ids to skip
 
 accounts:
-  1234567890: #Account Ids to target
+  0000x0000: #Account Ids to target. Will be updated by sed in AWS CodeBuild to target the current executing account
     presets:
       - "aws-nuke-service"
       - "aws-organizations"

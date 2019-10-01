@@ -357,6 +357,9 @@ Resources:
                 - aws configure set aws_session_token $aws_session_token --profile $AWS_NukeProfileName
             build:
               commands:
+                - ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+                - echo "Updating AWS Account ID to $ACCOUNT_ID"
+                - sed -i "s/0000xx0000/$ACCOUNT_ID/g" $AWS_NukeConfigFile
                 - echo "Executing Nuke...."
                 - |
                   if [ "$AWS_NukeDryRun" = "true" ]; then
