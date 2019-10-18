@@ -19,6 +19,11 @@ Parameters:
     Description: Git OAuthToken
     NoEcho: true
 
+  AWSNukeVersionNumber:
+    Description: The version number of an aws-nuke available release to download
+    Type: String
+    Default: 2.12.0
+
   AWSNukeConfigFile:
     Description: The directory path to the config file used by aws-nuke
     Type: String
@@ -26,7 +31,7 @@ Parameters:
   AWSNukeProfileName:
     Description: The name of a CLI Profile to setup in AWS CodeBuild
     Type: String
-    Default: default
+    Default: nuke
 
   AWSNukeDryRun:
     Description: Select False to delete resources permanantly.
@@ -160,6 +165,38 @@ Resources:
         - - !Ref 'AWS::StackName'
           - CloudWatchEventRule
 
+  AwsNukePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - "*"
+          Effect: Allow
+          Resource: '*'
+      PolicyName: !Join
+        - '-'
+        -  - !Ref 'AWS::StackName'
+           - AwsNukePolicy
+      Roles:
+      - !Ref 'AwsNukeRole'
+
+  AwsNukeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Creating service role in IAM for aws-nuke to use when targetting resources for deletion
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt CodeBuildRole.Arn
+      Path: /
+      RoleName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - AwsNuke
+
   CodeBuildPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -172,9 +209,12 @@ Resources:
           Effect: Allow
           Resource: '*'
         - Action:
-          - "*"
+          - s3:Get*
+          - s3:List*
           Effect: Allow
-          Resource: '*'
+          Resource: 
+            - !Sub "${S3Bucket.Arn}"
+            - !Sub "${S3Bucket.Arn}/*"
       PolicyName: !Join
         - '-'
         -  - !Ref 'AWS::StackName'
@@ -325,6 +365,10 @@ Resources:
             Value: !Ref AWSNukeProfileName
           - Name: AWS_NukeDryRun
             Value: !Ref AWSNukeDryRun
+          - Name: AWS_NukeExecutioRoleArn
+            Value: !GetAtt AwsNukeRole.Arn
+          - Name: AWS_NukeVersion
+            Value: !Ref AWSNukeVersionNumber
       Name: !Sub '${AWS::StackName}-CodeBuildProject'
       ServiceRole: !Ref 'CodeBuildRole'
       LogsConfig:
@@ -338,7 +382,7 @@ Resources:
           phases:
             install:
               commands:
-                - export AWS_NUKE_VERSION=2.11.0
+                - export AWS_NUKE_VERSION=$AWS_NukeVersion
                 - apt-get install -y wget
                 - wget https://github.com/rebuy-de/aws-nuke/releases/download/v$AWS_NUKE_VERSION/aws-nuke-v$AWS_NUKE_VERSION-linux-amd64.tar.gz --no-check-certificate
                 - tar xvf aws-nuke-v$AWS_NUKE_VERSION-linux-amd64.tar.gz --strip-components=1
@@ -347,14 +391,12 @@ Resources:
                 - aws-nuke version
             pre_build:
               commands:
-                - echo "Setting AWS CLI Credentials to profile $AWS_NukeProfileName"
-                - creds=`curl 169.254.170.2$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`
-                - aws_access_key_id=`echo $creds | jq .AccessKeyId | tr -d '"'`
-                - aws_secret_access_key=`echo $creds | jq .SecretAccessKey | tr -d '"'`
-                - aws_session_token=`echo $creds | jq .Token | tr -d '"'`
-                - aws configure set aws_access_key_id $aws_access_key_id --profile $AWS_NukeProfileName
-                - aws configure set aws_secret_access_key $aws_secret_access_key --profile $AWS_NukeProfileName
-                - aws configure set aws_session_token $aws_session_token --profile $AWS_NukeProfileName
+                - echo "Setting aws cli config file for role assumption using metadata"
+                - aws configure set profile.$AWS_NukeProfileName.role_arn $AWS_NukeExecutioRoleArn
+                - aws configure set profile.$AWS_NukeProfileName.credential_source "EcsContainer"
+                - export AWS_PROFILE=$AWS_NukeProfileName
+                - export AWS_DEFAULT_PROFILE=$AWS_NukeProfileName
+                - export AWS_SDK_LOAD_CONFIG=1
             build:
               commands:
                 - ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
@@ -384,3 +426,6 @@ Outputs:
   PipelineBucket:
     Description: 'Pipeline Bucket'
     Value: !Ref 'S3Bucket'
+  CodePipeline:
+    Description: 'Code Pipeline Console Link'
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/codesuite/codepipeline/pipelines/${Pipeline}/view?region=${AWS::Region}"
